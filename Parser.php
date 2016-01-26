@@ -297,21 +297,13 @@ class Parser {
             }
 
 		if ($openIf > 0) {
-			if (!$this->config['production']){
-				$e = new SyntaxException("Error! You need to close an {if} tag in ".$this->templateFilepath." template");
-				throw $e->templateFile($this->templateFilepath);
-			} else {
-				die();
-			}
+			$e = new SyntaxException("Error! You need to close an {if} tag in ".$this->templateFilepath." template");
+			throw $e->templateFile($this->templateFilepath);
 		}
 
 		if ($this->loopLevel > 0) {
-			if (!$this->config['production']){
-				$e = new SyntaxException("Error! You need to close the {loop} tag in ".$this->templateFilepath." template");
-				throw $e->templateFile($this->templateFilepath);
-			} else {
-				die();
-			}
+			$e = new SyntaxException("Error! You need to close the {loop} tag in ".$this->templateFilepath." template");
+			throw $e->templateFile($this->templateFilepath);
 		}
 
         return $parsedCode;
@@ -394,14 +386,10 @@ class Parser {
                 $line++;
 
             // stop the execution of the script
-			if (!$this->config['production']){
-				$e = new SyntaxException('Syntax ' . $match[0] . ' not allowed in template: ' . $this->templateFilepath . ' at line ' . $line);
-				throw $e->templateFile($this->templateFilepath)
-					->tag($match[0])
-					->templateLine($line);
-			} else {
-				die();
-			}
+			$e = new SyntaxException('Syntax ' . $match[0] . ' not allowed in template: ' . $this->templateFilepath . ' at line ' . $line);
+			throw $e->templateFile($this->templateFilepath)
+				->tag($match[0])
+				->templateLine($line);
         }
     }
 
