@@ -99,7 +99,7 @@ class Tpl {
 		// none of these two options is security wise
 		#include 'data:text/plain,' . $html; # requires allow_url_fopen to be allowed
 		eval('?>' . $this->checkTemplate($filePath));
-		
+		#echo $this->checkTemplate($filePath);
         echo ob_get_clean();
 
     }
@@ -109,32 +109,29 @@ class Tpl {
      *
      * @param string $template: name of the file of the template
      *
-     * @throw \Rain\Tpl\NotFoundException the file doesn't exists
+     * @throw \Rain\NotFoundException the file doesn't exists
      * @return string: full filepath that php must use to include
      */
     protected function checkTemplate($filePath) {
-		
-		$baseName = basename($filePath);
-		
+				
+		$filePath = $this->config['tpl_dir'] . $filePath . '.' . $this->config['tpl_ext'];
+					
         // get template from Db
-		list($html,$md5_stored) = (new Db)->getTemplate($baseName);
+		list($html,$md5_stored) = (new Db)->getTemplate($filePath);
 		
 		// in case of production option is true, the actual templates are not required
 		// it is one step from here to removing templates after compilation
 		if (!$this->config['production']){
-			
-			$filePath = $this->config['tpl_dir'] . $filePath . '.' . $this->config['tpl_ext'];
-			
 			// For check templates are exists
 			if (!file_exists($filePath)) {
-				$e = new NotFoundException('Template ' . $baseName . ' not found!');
+				$e = new NotFoundException('Template ' . $filePath . ' not found!');
 				throw $e->templateFile($filePath);
 			}
 			
 			// Compile the template if the original has been updated
 			$md5_current = md5_file($filePath);
 			if ($this->config['debug'] || $md5_stored != $md5_current){
-				$html = (new Parser)->compileFile($this->config, $baseName, $filePath, $md5_current);
+				$html = (new Parser)->compileFile($this->config, $filePath, $md5_current);
 			}
 		}
 		

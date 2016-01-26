@@ -16,16 +16,13 @@ I went a bit further and IMO made initialization and configuration simpler, maki
 Here is the full change log:
 
 - Removed option for multiple template folders
-
 - Simplified config (see examples for usage)
 - Removed option for extra tags
-
 - Removed autoload, replaced with simple class include
-
-- Cache is stored in MongoDb
- GridFS
+- The parser code was somewhat reorganized
+- Cache is stored in MongoDb GridFS
 - Added 'production' option in case all templates are already in cache
-
+- In case the 'production' is enabled, all all Syntax exceptions will terminate the script
 - Using templates from subfolders of the templates folder is accepted (see examples for usage)
 
 Downsides
@@ -39,7 +36,4 @@ Downsides
 
 Code works great for me, I hope you enjoy it was well. Feedback is appreciated.
 Please do not store the test scripts with your production code.
-
-
-
 

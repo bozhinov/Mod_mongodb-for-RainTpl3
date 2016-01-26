@@ -18,11 +18,11 @@ class Db{
 		}
 	}
 	
-	public function getTemplate($templateName){
+	public function getTemplate($filePath){
 		
 		$return = array("", 0);
 
-		$tpl = $this->grid->findOne(array("meta.name" => $templateName));
+		$tpl = $this->grid->findOne(array("meta.name" => $filePath));
 		if (!is_null($tpl)){
 			$return[1] = $tpl->file['meta']['md5'];
 			$return[0] = $tpl->getBytes();	
@@ -54,13 +54,13 @@ class Db{
 		return $tpls;
 	}
 	
-	public function storeTemplate($templateCode, $templateName, $md5_current){
-		
+	public function storeTemplate($templateCode, $filePath, $md5_current){
+				
 		try {
 			
-			$this->grid->remove(array("meta.name" => $templateName));
+			$this->grid->remove(array("meta.name" => $filePath));
 		
-			$this->grid->storeBytes($templateCode, array("meta" => array("md5" => $md5_current, "name" => $templateName)));
+			$this->grid->storeBytes($templateCode, array("meta" => array("md5" => $md5_current, "name" => $filePath)));
 			
 		} catch (\MongoException $e) {
 			die('MongoDB: ' . $e->getMessage());
