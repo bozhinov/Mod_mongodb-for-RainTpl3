@@ -96,7 +96,25 @@ class Tpl {
         extract($this->var);
         ob_start();
 
-        $baseName = basename($filePath);
+		// none of these two options is security wise
+		#include 'data:text/plain,' . $html; # requires allow_url_fopen to be allowed
+		eval('?>' . $this->checkTemplate($filePath));
+		
+        echo ob_get_clean();
+
+    }
+	
+	 /**
+     * Check if the template exist and compile it if necessary
+     *
+     * @param string $template: name of the file of the template
+     *
+     * @throw \Rain\Tpl\NotFoundException the file doesn't exists
+     * @return string: full filepath that php must use to include
+     */
+    protected function checkTemplate($filePath) {
+		
+		$baseName = basename($filePath);
 		
         // get template from Db
 		list($html,$md5_stored) = (new Db)->getTemplate($baseName);
@@ -120,13 +138,9 @@ class Tpl {
 			}
 		}
 		
-		// none of these two options is security wise
-		#include 'data:text/plain,' . $html; # requires allow_url_fopen to be allowed
-		eval('?>' . $html);
+		return $html;
 		
-        echo ob_get_clean();
-
-    }
+	}
 
     /**
      * Assign variable
