@@ -30,7 +30,7 @@ require_once("MongoDb.php");
 class Tpl {
 
     // variables
-    public $var = array();
+    public $vars = array();
 
     // configuration
     protected $config = array(
@@ -93,7 +93,7 @@ class Tpl {
 		
 		(substr($this->config['tpl_dir'], -1) != '/') AND die("config option tpl_dir needs a trailing slash");
 		
-        extract($this->var);
+        extract($this->vars);
         ob_start();
 
 		// none of these two options is security wise
@@ -150,9 +150,9 @@ class Tpl {
      */
     public function assign($variable, $value = null) {
         if (is_array($variable)){
-            $this->var = $variable + $this->var;
+            $this->vars = $variable + $this->vars;
         } else {
-            $this->var[$variable] = $value;
+            $this->vars[$variable] = $value;
 		}
         #return $this; # I see no reason for the return
     }

@@ -27,7 +27,7 @@ class Parser {
 
     // variables
     public $var = array();
-	public $templateFilepath;
+	public $filePath;
 	public $config;
 	
 	protected $loopLevel = 0;
@@ -297,13 +297,13 @@ class Parser {
             }
 
 		if ($openIf > 0) {
-			$e = new SyntaxException("Error! You need to close an {if} tag in ".$this->templateFilepath." template");
-			throw $e->templateFile($this->templateFilepath);
+			$e = new SyntaxException("Error! You need to close an {if} tag in ".$this->filePath." template");
+			throw $e->templateFile($this->filePath);
 		}
 
 		if ($this->loopLevel > 0) {
-			$e = new SyntaxException("Error! You need to close the {loop} tag in ".$this->templateFilepath." template");
-			throw $e->templateFile($this->templateFilepath);
+			$e = new SyntaxException("Error! You need to close the {loop} tag in ".$this->filePath." template");
+			throw $e->templateFile($this->filePath);
 		}
 
         return $parsedCode;
@@ -386,8 +386,8 @@ class Parser {
                 $line++;
 
             // stop the execution of the script
-			$e = new SyntaxException('Syntax ' . $match[0] . ' not allowed in template: ' . $this->templateFilepath . ' at line ' . $line);
-			throw $e->templateFile($this->templateFilepath)
+			$e = new SyntaxException('Syntax ' . $match[0] . ' not allowed in template: ' . $this->filePath . ' at line ' . $line);
+			throw $e->templateFile($this->filePath)
 				->tag($match[0])
 				->templateLine($line);
         }
