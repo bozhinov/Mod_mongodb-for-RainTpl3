@@ -3,16 +3,22 @@
 namespace Rain;
 
 require_once("Tpl.php");
-require_once("../config.php");
 
-$tpl = new Tpl;
-$tpl->configure(array('base_dir' => BASE_DIR));
-$fs = $tpl->countTemplates();
+function reducePath(&$path){
+	$path = preg_replace(array("#(/{2,})#", "#(/\./+)#"), array("/", "/"), $path);				
+	$path = str_replace("/", DIRECTORY_SEPARATOR, $path);
+	$path = str_replace("\\\\", DIRECTORY_SEPARATOR, $path);
+}
 
+$fs = (new Tpl)->countTemplates();
 $grid = (new Db)->countTemplates();
 
 echo "Count templates filesystem: ".$fs['count']."<br />";
 echo "Count templates in cache: ".$grid['count']."<br /><br />";
+
+// TODO: this should not be necessary 
+array_walk($fs['names'], 'Rain\reducePath');
+array_walk($grid['names'], 'Rain\reducePath');
 
 if ($fs['count'] != $grid['count']){
 	echo "Not ready for production yet!<br />";
@@ -30,4 +36,5 @@ if ($fs['count'] != $grid['count']){
 #print_r($fs['names']);
 #echo "<br />";
 #print_r($grid['names']);
+
 ?>

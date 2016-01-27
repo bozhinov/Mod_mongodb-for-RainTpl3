@@ -40,7 +40,6 @@ class Tpl {
 		'production' => false, # will skip udpate check and load tpl directly from db
         'tpl_dir' => 'templates/',
         'tpl_ext' => 'html',
-		'base_dir' => '', # needed only for the countTemplates func. See examples
         'php_enabled' => false,
         'auto_escape' => true,
         'sandbox' => true, # required for the blacklist
@@ -56,7 +55,7 @@ class Tpl {
 			}
 		}
 	}
-	
+		
     /**
      * Count number of templates in the templates folder
      * Used only in the Test-Production-Ready script
@@ -64,18 +63,18 @@ class Tpl {
      * @returns array
      */
 	public function countTemplates(){
-		
-		(strlen($this->config['base_dir']) == 0) AND die("Need to set base_dir");
+	
 		(substr($this->config['tpl_dir'], -1) != '/') AND die("config option tpl_dir needs a trailing slash");
 		
 		$tpls = array();
 		$tpls['count'] = 0;
 		$tpls['names'] = array();
 		
-		foreach ((new \DirectoryIterator($this->config['base_dir'].$this->config['tpl_dir'])) as $fileInfo) {
-			if($fileInfo->isDot()) continue;
-			$tpls['count']++;
-			$tpls['names'][] = substr($fileInfo->getBasename(), 0,-1-strlen($this->config['tpl_ext'])); # this should haved worked without the substr ...
+		foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator("../".$this->config['tpl_dir'])) as $fileInfo) {
+			if($fileInfo->isFile()){
+				$tpls['count']++;
+				$tpls['names'][] = substr($fileInfo->getPath(), 3)."/".$fileInfo->getFilename();
+			}			
 		}
 		
 		return $tpls;
