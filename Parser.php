@@ -13,12 +13,13 @@
  *  ------------
  *  - Removed Plugins
  *  - Removed option for multiple template folders
- *  - Simplified config (check examples for usage)
+ *  - Simplified config (see examples for usage)
  *  - Removed option for extra tags
+ *  - Parser code somewhat reorganized
+ *  - Removed SyntaxException
  *  - Removed autoload, replaced with simple class include
  *  - Cache is stored in MongoDb
  *  - Added 'production' option in case all templates are already in cache
- *  - Using templates from subfolders of the templates folder is accepted (see examples for usage)
  */
 
 namespace Rain;
@@ -26,12 +27,9 @@ namespace Rain;
 class Parser {
 
     // variables
-    public $var = array();
-	public $filePath;
-	public $config;
-	
-	protected $loopLevel = 0;
-	protected $code;
+	private $filePath;
+	private $config;
+	private $loopLevel = 0;
 
     // tags natively supported
     protected static $tags = array(
@@ -89,8 +87,8 @@ class Parser {
 		$this->config = $config;
 		$this->filePath = $filePath;
 
-		// read the file // store second copy in the class var for the blacklist for what ever reason
-		$this->code = $parsedCode = file_get_contents($this->filePath);
+		// read the file
+		$parsedCode = file_get_contents($this->filePath);
 
 		// disable php tag // the xml code seems to be important only if the php tag is disabled.
 		if (!$this->config['php_enabled']) {
@@ -297,12 +295,12 @@ class Parser {
             }
 
 		if ($openIf > 0) {
-			$e = new SyntaxException("Error! You need to close an {if} tag in ".$this->filePath." template");
+			$e = new Exception("Error! You need to close an {if} tag in ".$this->filePath." template");
 			throw $e->templateFile($this->filePath);
 		}
 
 		if ($this->loopLevel > 0) {
-			$e = new SyntaxException("Error! You need to close the {loop} tag in ".$this->filePath." template");
+			$e = new Exception("Error! You need to close the {loop} tag in ".$this->filePath." template");
 			throw $e->templateFile($this->filePath);
 		}
 
@@ -379,17 +377,10 @@ class Parser {
         // check if the function is in the black list (or not in white list)
         if (preg_match($this->config['black_list_preg'], $html, $match)) {
 
-            // find the line of the error
-            $line = 0;
-            $rows = explode("\n", $this->code);
-            while (!strpos($rows[$line], $html) && $line + 1 < count($rows))
-                $line++;
-
             // stop the execution of the script
-			$e = new SyntaxException('Syntax ' . $match[0] . ' not allowed in template: ' . $this->filePath . ' at line ' . $line);
+			$e = new Exception('Syntax ' . $match[0] . ' not allowed in template: ' . $this->filePath);
 			throw $e->templateFile($this->filePath)
-				->tag($match[0])
-				->templateLine($line);
+				->tag($match[0]);
         }
     }
 

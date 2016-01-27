@@ -15,10 +15,11 @@
  *  - Removed option for multiple template folders
  *  - Simplified config (see examples for usage)
  *  - Removed option for extra tags
+ *  - Parser code somewhat reorganized
+ *  - Removed SyntaxException
  *  - Removed autoload, replaced with simple class include
  *  - Cache is stored in MongoDb
  *  - Added 'production' option in case all templates are already in cache
- *  - Using templates from subfolders of the templates folder is accepted (see examples for usage)
  */
 
 namespace Rain;
