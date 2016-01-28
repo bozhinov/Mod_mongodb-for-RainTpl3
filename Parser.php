@@ -8,17 +8,16 @@
  *
  *  @version 3.0 Alpha milestone: https://github.com/rainphp/raintpl3/issues/milestones?with_issues=no
  *
- *  mod_MongoDb (unofficial)
+ *  mod_MongoDb 1.0 (unofficial)
  *  maintained by Momchil Bozhinov (momchil@bojinov.info)
  *  ------------
- *  - Removed Plugins
- *  - Removed option for multiple template folders
- *  - Simplified config (see examples for usage)
- *  - Removed option for extra tags
- *  - Parser code somewhat reorganized
+ *  - Removed plugins
+ *  - Removed the option for extra tags
  *  - Removed SyntaxException
- *  - Removed autoload, replaced with simple class include
- *  - Cache is stored in MongoDb
+ *  - Removed autoload, replaced with a simple class include
+ *  - Simplified config (see examples for usage)
+ *  - Parser code somewhat reorganized
+ *  - Cache is stored in MongoDb GridFS
  *  - Added 'production' option in case all templates are already in cache
  */
 
@@ -80,7 +79,7 @@ class Parser {
 	* @param string $config: global config
 	* @param string $filePath: full path to the template to be compiled
 	* @param string $md5_current: MD5 checksum of the template to be compiled
-	 */
+	*/
   
     public function compileFile($config, $filePath, $md5_current) {
 		
@@ -88,22 +87,20 @@ class Parser {
 		$this->filePath = $filePath;
 
 		// read the file
-		$parsedCode = file_get_contents($this->filePath);
-
-		// disable php tag // the xml code seems to be important only if the php tag is disabled.
-		if (!$this->config['php_enabled']) {
-			// xml substitution
-			$parsedCode = preg_replace("/<\?xml(.*?)\?>/s", /*<?*/ "##XML\\1XML##", $parsedCode);
-
-			// disable php tag
-			$parsedCode = str_replace(array("<?", "?>"), array("&lt;?", "?&gt;"), $parsedCode);
-
-			// xml re-substitution
-			$parsedCode = preg_replace_callback("/##XML(.*?)XML##/s", function( $match ) {
-					return "<?php echo '<?xml " . stripslashes($match[1]) . " ?>'; ?>";
-				}, $parsedCode);
-		}
+		$parsedCode = file_get_contents($filePath);
 		
+		// xml substitution
+		$parsedCode = preg_replace("/<\?xml(.*?)\?>/s", /*<?*/ "##XML\\1XML##", $parsedCode);
+
+		// disable php tag.
+		if (!$config['php_enabled']) {
+			$parsedCode = str_replace(array("<?", "?>"), array("&lt;?", "?&gt;"), $parsedCode);
+		}
+		// xml re-substitution
+		$parsedCode = preg_replace_callback("/##XML(.*?)XML##/s", function($match) {
+				return "<?php echo '<?xml " . stripslashes($match[1]) . " ?>'; ?>";
+			}, $parsedCode);
+					
 		$parsedCode = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $this->compileTemplate($parsedCode);
 
 		// fix the php-eating-newline-after-closing-tag-problem

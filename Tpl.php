@@ -8,17 +8,16 @@
  *
  *  @version 3.0 Alpha milestone: https://github.com/rainphp/raintpl3/issues/milestones?with_issues=no
  *
- *  mod_MongoDb (unofficial)
+ *  mod_MongoDb 1.0 (unofficial)
  *  maintained by Momchil Bozhinov (momchil@bojinov.info)
  *  ------------
- *  - Removed Plugins
- *  - Removed option for multiple template folders
- *  - Simplified config (see examples for usage)
- *  - Removed option for extra tags
- *  - Parser code somewhat reorganized
+ *  - Removed plugins
+ *  - Removed the option for extra tags
  *  - Removed SyntaxException
- *  - Removed autoload, replaced with simple class include
- *  - Cache is stored in MongoDb
+ *  - Removed autoload, replaced with a simple class include
+ *  - Simplified config (see examples for usage)
+ *  - Parser code somewhat reorganized
+ *  - Cache is stored in MongoDb GridFS
  *  - Added 'production' option in case all templates are already in cache
  */
 
@@ -59,6 +58,8 @@ class Tpl {
     /**
      * Count number of templates in the templates folder
      * Used only in the Test-Production-Ready script
+	 * Test-Production-Ready.php needs to be placed in the Rain folder
+	 * assuming that the templates folder is a one level up
      *
      * @returns array
      */
@@ -83,8 +84,7 @@ class Tpl {
     /**
      * Draw the template
      *
-     * @param string $templateFilePath: name of the template file
-     * @param bool $toString: if the method should return a string
+     * @param string $filePath: name of the template file
      * or echo the output
      *
      * @return void, string: depending of the $toString
@@ -93,13 +93,15 @@ class Tpl {
 		
 		(substr($this->config['tpl_dir'], -1) != '/') AND die("config option tpl_dir needs a trailing slash");
 		
-        extract($this->vars);
-        ob_start();
+		extract($this->vars);
+		
+		ob_start();
 
 		// none of these two options is security wise
 		#include 'data:text/plain,' . $html; # requires allow_url_fopen to be allowed
 		eval('?>' . $this->checkTemplate($filePath));
 		#echo $this->checkTemplate($filePath);
+		
         echo ob_get_clean();
 
     }
@@ -107,10 +109,9 @@ class Tpl {
 	 /**
      * Check if the template exist and compile it if necessary
      *
-     * @param string $template: name of the file of the template
+     * @param string $filePath: the path to the template file
      *
      * @throw \Rain\NotFoundException the file doesn't exists
-     * @return string: full filepath that php must use to include
      */
     protected function checkTemplate($filePath) {
 				
