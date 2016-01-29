@@ -31,10 +31,10 @@ require_once("MongoDb.php");
 class Tpl {
 
     // variables
-    public $vars = array();
+	public $vars = array();
 
     // configuration
-    protected $config = array(
+	protected $config = array(
         'charset' => 'UTF-8',
         'debug' => false, # will compile the template every single run
 		'production' => false, # will skip udpate check and load tpl directly from db
@@ -58,14 +58,14 @@ class Tpl {
 		(substr($this->config['tpl_dir'], -1) != '/') AND die("config option tpl_dir needs a trailing slash");
 	}
 		
-    /**
-     * Count number of templates in the templates folder
-     * Used only in the Test-Production-Ready script
+	/**
+	 * Count number of templates in the templates folder
+	 * Used only in the Test-Production-Ready script
 	 * Test-Production-Ready.php needs to be placed in the Rain folder
 	 * assuming that the templates folder is a one level up
-     *
-     * @returns array
-     */
+	 *
+	 * @returns array
+	 */
 	public function countTemplates(){
 			
 		$tpls = array();
@@ -82,13 +82,13 @@ class Tpl {
 		return $tpls;
 	}
 
-    /**
-     * Draw the template
-     *
-     * @param string $filePath: name of the template file or echo the output
-     *
-     */
-    public function draw($filePath) {
+	/**
+	 * Draw the template
+	 *
+	 * @param string $filePath: name of the template file or echo the output
+	 *
+	 */
+	public function draw($filePath) {
 				
 		extract($this->vars);
 		
@@ -99,9 +99,9 @@ class Tpl {
 		eval('?>' . $this->checkTemplate($filePath));
 		#echo $this->checkTemplate($filePath);
 		
-        echo ob_get_clean();
+		echo ob_get_clean();
 
-    }
+	}
 	
 	 /**
      * Check if the template exist and compile it if necessary
@@ -114,9 +114,9 @@ class Tpl {
 				
 		$filePath = $this->config['tpl_dir'] . $filePath . '.' . $this->config['tpl_ext'];
 					
-        // get template from Db
+		// get template from Db
 		list($html,$md5_stored) = (new Db)->getTemplate($filePath);
-		
+
 		// in case of production option is true, the actual templates are not required
 		// it is one step from here to removing templates after compilation
 		if (!$this->config['production']){
@@ -132,7 +132,7 @@ class Tpl {
 				$html = (new Parser)->compileFile($this->config, $filePath, $md5_current);
 			}
 		}
-		
+
 		return $html;
 		
 	}
@@ -145,12 +145,12 @@ class Tpl {
      * @param mixed $value value assigned to this variable. Not set if variable_name is an associative array
      *
      */
-    public function assign($variable, $value = null) {
-        if (is_array($variable)){
-            $this->vars = $variable + $this->vars;
-        } else {
-            $this->vars[$variable] = $value;
+	public function assign($variable, $value = null) {
+		if (is_array($variable)){
+			$this->vars = $variable + $this->vars;
+		} else {
+			$this->vars[$variable] = $value;
 		}
-    }
+	}
 
 }
