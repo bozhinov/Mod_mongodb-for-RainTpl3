@@ -71,45 +71,30 @@ class Parser {
 		
 		$this->config = $config;
 
-		// read the file
-		$parsedCode = file_get_contents($filePath);
+		// read the tempalte
+		$code = file_get_contents($filePath);
 		
 		// xml substitution
-		$parsedCode = preg_replace("/<\?xml(.*?)\?>/s", /*<?*/ "##XML\\1XML##", $parsedCode);
+		$code = preg_replace("/<\?xml(.*?)\?>/s", /*<?*/ "##XML\\1XML##", $code);
 
-		// disable php tag.
+		// disable php tag
 		if (!$config['php_enabled']) {
-			$parsedCode = str_replace(array("<?", "?>"), array("&lt;?", "?&gt;"), $parsedCode);
+			$code = str_replace(array("<?", "?>"), array("&lt;?", "?&gt;"), $code);
 		}
 		// xml re-substitution
-		$parsedCode = preg_replace_callback("/##XML(.*?)XML##/s", function($match) {
+		$code = preg_replace_callback("/##XML(.*?)XML##/s", function($match) {
 				return "<?php echo '<?xml " . stripslashes($match[1]) . " ?>'; ?>";
-			}, $parsedCode);
+			}, $code);
 					
-		$parsedCode = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $this->compileTemplate($parsedCode, $filePath);
-
-		// fix the php-eating-newline-after-closing-tag-problem
-		$parsedCode = str_replace("?>\n", "?>\n\n", $parsedCode);
-
-		(new Db)->storeTemplate($parsedCode, $filePath, $md5_current);
-		
-		return $parsedCode;
-    }
-
-    /**
-     * Compile template
-     * @access protected
-     *
-     * @param string $code: code to compile
-	 * @param string $filePath: full path to the template to be compiled
-     */
-    protected function compileTemplate($code, $filePath) {
+		$code = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $code;
 
         // set tags
+		$tagSplit = array();
+		$tagMatch = array();
+		
         foreach (static::$tags as $tag => $tagArray) {
-            list($split, $match) = $tagArray;
-            $tagSplit[$tag] = $split;
-            $tagMatch[$tag] = $match;
+            $tagSplit[$tag] = $tagArray[0];
+            $tagMatch[$tag] = $tagArray[1];
         }
 
         //Remove comments
@@ -119,6 +104,8 @@ class Parser {
 
         //split the code with the tags regexp
         $codeSplit = preg_split("/" . implode("|", $tagSplit) . "/", $code, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+		
+		unset($code); // we don't need it any longer
 
         //variables initialization
         $parsedCode = $commentIsOpen = $ignoreIsOpen = NULL;
@@ -161,7 +148,7 @@ class Parser {
 						$includeTemplate = $this->reducePath($this->varReplace($matches[1]));
 						
 						//dynamic include
-						if ((strpos($matches[1], '$') !== false)) {
+						if ((strpos($matches[1], '$') !== FALSE)) {
 							$parsedCode .= '<?php echo $this->checkTemplate(' . $includeTemplate . ');?>';
 						} else {
 							$parsedCode .= '<?php echo $this->checkTemplate("' . $includeTemplate . '");?>';
@@ -180,7 +167,7 @@ class Parser {
 							$assignNewVar = "$newvar=$var;";
 						} else {
 							$newvar = $var;
-							$assignNewVar = null;
+							$assignNewVar = NULL;
 						}
 						
 						//loop variables
@@ -239,7 +226,7 @@ class Parser {
 					// autoescape off
 					case (preg_match($tagMatch['autoescape'], $html, $matches)):
 						$this->config['auto_escape_old'] = $this->config['auto_escape'];
-						$this->config['auto_escape'] = ($matches[1] == 'off' or $matches[1] == 'false' or $matches[1] == '0' or $matches[1] == null) ? FALSE : TRUE;
+						$this->config['auto_escape'] = ($matches[1] == 'off' or $matches[1] == 'false' or $matches[1] == '0' or $matches[1] == NULL) ? FALSE : TRUE;
 						break;
 					// autoescape on
 					case (preg_match($tagMatch['autoescape_close'], $html, $matches)):
@@ -282,7 +269,12 @@ class Parser {
 			throw $e->templateFile($filePath);
 		}
 
-        return $parsedCode;
+		// fix the php-eating-newline-after-closing-tag-problem
+		$parsedCode = str_replace("?>\n", "?>\n\n", $parsedCode);
+		// store in Db
+		(new Db)->storeTemplate($parsedCode, $filePath, $md5_current);
+		
+		return $parsedCode;
     }
 
     protected function varReplace($html, $escape = TRUE) {
@@ -330,7 +322,7 @@ class Parser {
         return $html;
     }
 
-    public static function reducePath($path){
+    public static function reducePath($path){ # TODO: figure out the slash issue and remove this function
         // reduce the path
 		
 		$path = preg_replace(array("#(://(*SKIP)(*FAIL))|(/{2,})#", "#(/\./+)#", "#\\\#"), array("/", "/","\\\\\\"), $path);		
