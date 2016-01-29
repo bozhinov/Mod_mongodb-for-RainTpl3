@@ -337,21 +337,17 @@ class Parser {
     protected function modifierReplace($html) {
 
         $this->blackList($html);
-        if (strpos($html,'|') !== false && substr($html,strpos($html,'|')+1,1) != "|") {
-            preg_match('/([\$a-z_A-Z0-9\(\),\[\]"->]+)\|([\$a-z_A-Z0-9\(\):,\[\]"->]+)/i', $html,$result);
+		
+		while (strpos($html,'|') !== false && substr($html, strpos($html,'|')+1,1) != "|") {
+			
+			preg_match('/([\$a-z_A-Z0-9\(\),\[\]"->]+)\|([\$a-z_A-Z0-9\(\):,\[\]"->]+)/i', $html, $result);
 
-            $function_params = $result[1];
-            $explode = explode(":",$result[2]);
-            $function = $explode[0];
-            $params = isset($explode[1]) ? "," . $explode[1] : null;
+			@list($function, $params) = explode(":", $result[2]);
+			(!is_null($params)) AND $params = ",".$params;
 
-            $html = str_replace($result[0],$function . "(" . $function_params . "$params)",$html);
-
-            if (strpos($html,'|') !== false && substr($html,strpos($html,'|')+1,1) != "|") {
-                $html = $this->modifierReplace($html);
-            }
-        }
-
+			$html = str_replace($result[0], $function . "(" . $result[1] . "$params)", $html);
+		}
+		
         return $html;
     }
 
