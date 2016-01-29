@@ -277,7 +277,7 @@ class Parser {
 					//variables
 					case (preg_match($tagMatch['variable'], $html, $matches)):
 						//variables substitution (es. {$title})
-						$parsedCode .= "<?php " . $this->varReplace($matches[1], TRUE, TRUE) . "; ?>";
+						$parsedCode .= "<?php echo " . $this->varReplace($matches[1]) . "; ?>";
 						break;
 					//constants
 					case (preg_match($tagMatch['constant'], $html, $matches)):
@@ -304,7 +304,7 @@ class Parser {
         return $parsedCode;
     }
 
-    protected function varReplace($html, $escape = TRUE, $echo = FALSE) {
+    protected function varReplace($html, $escape = TRUE) {
 
         // change variable name if loop level
         $html = preg_replace(array('/(\$key)\b/', '/(\$value)\b/', '/(\$counter)\b/'), array('${1}' . $this->loopLevel, '${1}' . $this->loopLevel, '${1}' . $this->loopLevel), $html);
@@ -315,7 +315,6 @@ class Parser {
             for ($i = 0; $i < count($matches[1]); $i++) {
 
                 $rep = preg_replace('/\[(\${0,1}[a-zA-Z_0-9]*)\]/', '["$1"]', $matches[1][$i]);
-                //$rep = preg_replace('/\.(\${0,1}[a-zA-Z_0-9]*)/', '["$1"]', $rep);
                 $rep = preg_replace( '/\.(\${0,1}[a-zA-Z_0-9]*(?![a-zA-Z_0-9]*(\'|\")))/', '["$1"]', $rep );
                 $html = str_replace($matches[0][$i], $rep, $html);
             }
@@ -328,12 +327,7 @@ class Parser {
 
                 // escape character
                 if ($this->config['auto_escape'] && $escape)
-                    //$html = "htmlspecialchars( $html )";
                     $html = "htmlspecialchars( $html, ENT_COMPAT, '" . $this->config['charset'] . "', FALSE )";
-
-                // if is an assignment it doesn't add echo
-                if ($echo)
-                    $html = "echo " . $html;
             }
         }
 
