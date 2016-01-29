@@ -335,10 +335,10 @@ class Parser {
     }
 
     protected function modifierReplace($html) {
-
-        $this->blackList($html);
 		
 		while (strpos($html,'|') !== false && substr($html, strpos($html,'|')+1,1) != "|") {
+			
+			$this->blackList($html);
 			
 			preg_match('/([\$a-z_A-Z0-9\(\),\[\]"->]+)\|([\$a-z_A-Z0-9\(\):,\[\]"->]+)/i', $html, $result);
 
