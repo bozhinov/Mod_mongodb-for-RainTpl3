@@ -53,6 +53,9 @@ class Tpl {
 				$this->config[$my] = $val;
 			}
 		}
+		
+		// Do the check here. No need to check if default
+		(substr($this->config['tpl_dir'], -1) != '/') AND die("config option tpl_dir needs a trailing slash");
 	}
 		
     /**
@@ -64,9 +67,7 @@ class Tpl {
      * @returns array
      */
 	public function countTemplates(){
-	
-		(substr($this->config['tpl_dir'], -1) != '/') AND die("config option tpl_dir needs a trailing slash");
-		
+			
 		$tpls = array();
 		$tpls['count'] = 0;
 		$tpls['names'] = array();
@@ -84,20 +85,16 @@ class Tpl {
     /**
      * Draw the template
      *
-     * @param string $filePath: name of the template file
-     * or echo the output
+     * @param string $filePath: name of the template file or echo the output
      *
-     * @return void, string: depending of the $toString
      */
     public function draw($filePath) {
-		
-		(substr($this->config['tpl_dir'], -1) != '/') AND die("config option tpl_dir needs a trailing slash");
-		
+				
 		extract($this->vars);
 		
 		ob_start();
 
-		// none of these two options is security wise
+		// Not security wise either way
 		#include 'data:text/plain,' . $html; # requires allow_url_fopen to be allowed
 		eval('?>' . $this->checkTemplate($filePath));
 		#echo $this->checkTemplate($filePath);
@@ -147,7 +144,6 @@ class Tpl {
      * @param mixed $variable Name of template variable or associative array name/value
      * @param mixed $value value assigned to this variable. Not set if variable_name is an associative array
      *
-     * @return \Rain $this
      */
     public function assign($variable, $value = null) {
         if (is_array($variable)){
@@ -155,7 +151,6 @@ class Tpl {
         } else {
             $this->vars[$variable] = $value;
 		}
-        #return $this; # I see no reason for the return
     }
 
 }
