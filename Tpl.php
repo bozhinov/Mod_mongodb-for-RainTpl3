@@ -35,15 +35,15 @@ class Tpl {
 
     // configuration
 	protected $config = array(
-        'charset' => 'UTF-8',
-        'debug' => false, # will compile the template every single run
+		'charset' => 'UTF-8',
+		'debug' => false, # will compile the template every single run
 		'production' => false, # will skip udpate check and load tpl directly from db
-        'tpl_dir' => 'templates/',
-        'tpl_ext' => 'html',
-        'php_enabled' => false,
-        'auto_escape' => true,
-        'remove_comments' => false
-    );
+		'tpl_dir' => 'templates/',
+		'tpl_ext' => 'html',
+		'php_enabled' => false,
+		'auto_escape' => true,
+		'remove_comments' => false
+	);
 
 	public function configure($my_conf){
 		(!is_array($my_conf)) AND die("Invalid config");

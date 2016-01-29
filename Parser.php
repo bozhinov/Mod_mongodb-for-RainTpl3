@@ -59,14 +59,13 @@ class Parser {
         'constant' => array('({#.*?})', '/{#(.*?)#{0,1}}/'),
     );
 
-    /**
-    * Compile the file and save it in the cache
+	/**
+	* Compile the file and save it in the cache
 	*
 	* @param string $config: global config
 	* @param string $filePath: full path to the template to be compiled
 	* @param string $md5_current: MD5 checksum of the template to be compiled
 	*/
-  
     public function compileFile($config, $filePath, $md5_current) {
 		
 		$this->config = $config;
@@ -88,34 +87,34 @@ class Parser {
 					
 		$code = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $code;
 
-        // set tags
+		// set tags
 		$tagSplit = array();
 		$tagMatch = array();
-		
-        foreach (static::$tags as $tag => $tagArray) {
-            $tagSplit[$tag] = $tagArray[0];
-            $tagMatch[$tag] = $tagArray[1];
-        }
 
-        //Remove comments
-        if ($this->config['remove_comments']) {
-            $code = preg_replace('/<!--(.*)-->/Uis', '', $code);
-        }
+		foreach (static::$tags as $tag => $tagArray) {
+			$tagSplit[$tag] = $tagArray[0];
+			$tagMatch[$tag] = $tagArray[1];
+		}
 
-        //split the code with the tags regexp
-        $codeSplit = preg_split("/" . implode("|", $tagSplit) . "/", $code, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
-		
+		//Remove comments
+		if ($this->config['remove_comments']) {
+			$code = preg_replace('/<!--(.*)-->/Uis', '', $code);
+		}
+
+		//split the code with the tags regexp
+		$codeSplit = preg_split("/" . implode("|", $tagSplit) . "/", $code, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+
 		unset($code); // we don't need it any longer
 
-        //variables initialization
-        $parsedCode = $commentIsOpen = $ignoreIsOpen = NULL;
-        $openIf = 0;
+		//variables initialization
+		$parsedCode = $commentIsOpen = $ignoreIsOpen = NULL;
+		$openIf = 0;
 
-        // if the template is not empty
-        if ($codeSplit)
+		// if the template is not empty
+		if ($codeSplit)
 
-            //read all parsed code
-            foreach ($codeSplit as $html) {
+			//read all parsed code
+			foreach ($codeSplit as $html) {
 				
 				switch(true){
 					//close ignore tag
@@ -199,7 +198,7 @@ class Parser {
 						$this->loopLevel--; //decrease the loop counter
 						$parsedCode .= "<?php } ?>"; //close loop code
 						break;
-				    //break loop tag
+					//break loop tag
 					case (preg_match($tagMatch['loop_break'], $html)):
 						$parsedCode .= "<?php break; ?>"; //close loop code
 						break;
@@ -261,9 +260,9 @@ class Parser {
 						break;
 					default:
 						$parsedCode .= $html;
-                }
+				}
 
-            }
+			}
 
 		if ($openIf > 0) {
 			$e = new Exception("Error! You need to close an {if} tag in ".$filePath." template");
@@ -285,32 +284,32 @@ class Parser {
 
     protected function varReplace($html, $escape = TRUE) {
 
-        // change variable name if loop level
-        $html = preg_replace(array('/(\$key)\b/', '/(\$value)\b/', '/(\$counter)\b/'), array('${1}' . $this->loopLevel, '${1}' . $this->loopLevel, '${1}' . $this->loopLevel), $html);
+		// change variable name if loop level
+		$html = preg_replace(array('/(\$key)\b/', '/(\$value)\b/', '/(\$counter)\b/'), array('${1}' . $this->loopLevel, '${1}' . $this->loopLevel, '${1}' . $this->loopLevel), $html);
 
-        // if it is a variable
-        if (preg_match_all('/(\$[a-z_A-Z][^\s]*)/', $html, $matches)) {
-            // substitute . and [] with [" "]
-            for ($i = 0; $i < count($matches[1]); $i++) {
+		// if it is a variable
+		if (preg_match_all('/(\$[a-z_A-Z][^\s]*)/', $html, $matches)) {
+			// substitute . and [] with [" "]
+			for ($i = 0; $i < count($matches[1]); $i++) {
 
-                $rep = preg_replace('/\[(\${0,1}[a-zA-Z_0-9]*)\]/', '["$1"]', $matches[1][$i]);
-                $rep = preg_replace( '/\.(\${0,1}[a-zA-Z_0-9]*(?![a-zA-Z_0-9]*(\'|\")))/', '["$1"]', $rep );
-                $html = str_replace($matches[0][$i], $rep, $html);
-            }
+				$rep = preg_replace('/\[(\${0,1}[a-zA-Z_0-9]*)\]/', '["$1"]', $matches[1][$i]);
+				$rep = preg_replace( '/\.(\${0,1}[a-zA-Z_0-9]*(?![a-zA-Z_0-9]*(\'|\")))/', '["$1"]', $rep );
+				$html = str_replace($matches[0][$i], $rep, $html);
+			}
 
-            // update modifier
-            $html = $this->modifierReplace($html);
+			// update modifier
+			$html = $this->modifierReplace($html);
 
-            // if does not initialize a value, e.g. {$a = 1}
-            if (!preg_match('/\$.*=.*/', $html)) {
+			// if does not initialize a value, e.g. {$a = 1}
+			if (!preg_match('/\$.*=.*/', $html)) {
 
-                // escape character
-                if ($this->config['auto_escape'] && $escape)
-                    $html = "htmlspecialchars( $html, ENT_COMPAT, '" . $this->config['charset'] . "', FALSE )";
-            }
-        }
+				// escape character
+				if ($this->config['auto_escape'] && $escape)
+					$html = "htmlspecialchars( $html, ENT_COMPAT, '" . $this->config['charset'] . "', FALSE )";
+			}
+		}
 
-        return $html;
+		return $html;
     }
 
     protected function modifierReplace($html) {
@@ -325,7 +324,7 @@ class Parser {
 			$html = str_replace($result[0], $function . "(" . $result[1] . "$params)", $html);
 		}
 		
-        return $html;
+		return $html;
     }
 
 }
