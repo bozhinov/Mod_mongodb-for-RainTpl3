@@ -4,6 +4,7 @@ require_once("config.php");
 
 $cat = (isset($_REQUEST["cat"])) ? $_REQUEST["cat"] : "Category_1";
 $folder = "\\VIDEOS\\".$cat."\\";
+$_VIDEOS = array();
 
 foreach ((new DirectoryIterator(dirname(__FILE__).$folder)) as $fileInfo) {
 	if($fileInfo->isDot()) continue;
