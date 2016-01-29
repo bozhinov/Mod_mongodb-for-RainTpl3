@@ -75,7 +75,7 @@ class Tpl {
 		foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator("../".$this->config['tpl_dir'])) as $fileInfo) {
 			if($fileInfo->isFile()){
 				$tpls['count']++;
-				$tpls['names'][] = substr($fileInfo->getPath(), 3)."/".$fileInfo->getFilename();
+				$tpls['names'][] = substr($fileInfo->getPath(), 3)."\\".$fileInfo->getFilename();
 			}			
 		}
 		

@@ -71,7 +71,7 @@ class Parser {
 		
 		$this->config = $config;
 
-		// read the tempalte
+		// read the template
 		$code = file_get_contents($filePath);
 		
 		// xml substitution
@@ -145,7 +145,13 @@ class Parser {
 					case (preg_match($tagMatch['include'], $html, $matches)):
 
 						// reduce the path
-						$includeTemplate = $this->reducePath($this->varReplace($matches[1]));
+						$matches[1] = preg_replace(array("#(://(*SKIP)(*FAIL))|(/{2,})#", "#(/\./+)#", "#\\\#"), array("/", "/","\\\\\\"), $matches[1]);		
+						while(preg_match('#\w+\.\./#', $matches[1])) {
+							$matches[1] = preg_replace('#\w+/\.\./#', '', $matches[1]);
+						}
+										
+						// parse
+						$includeTemplate = $this->varReplace($matches[1]);
 						
 						//dynamic include
 						if ((strpos($matches[1], '$') !== FALSE)) {
@@ -322,22 +328,4 @@ class Parser {
         return $html;
     }
 
-    public static function reducePath($path){ # TODO: figure out the slash issue and remove this function
-        // reduce the path
-		
-		$path = preg_replace(array("#(://(*SKIP)(*FAIL))|(/{2,})#", "#(/\./+)#", "#\\\#"), array("/", "/","\\\\\\"), $path);		
-		
-        while(preg_match('#\w+\.\./#', $path)) {
-            $path = preg_replace('#\w+/\.\./#', '', $path);
-        }
-		
-		 // the extra slash is so we can double the one after TPL_DIR
-		 // this may or may not work on anything but Windows. 
-		 // If it does not work on Unix just change TPL_DIR from templates/ to templates\. That should do the trick
-		 // it is either that or we need to drag TPL_DIR here and then check if it was already prepended in the TPL\checkTemplate function
-		$path = DIRECTORY_SEPARATOR.$path;
-		
-        return str_replace("/", DIRECTORY_SEPARATOR, $path);
-
-    }
 }
