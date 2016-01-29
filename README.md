@@ -27,7 +27,7 @@ Downsides
 =============
 - Using EVAL() for executing the code stored in the database
 - Race conditions are possible, depending on MongoDb configuration (using of journal, storage engine, etc)
-  Same problem makes it unsuitable for PHP session handler. Check my other projects to how I made that work.
+  Same problem makes it unsuitable for PHP session handler. Check my other project to see how I made that work.
 - I only made it work and tested it for PHP 5.6 and MongoDb 3.0 & 3.2. I will start working on PHP7 as soon as it is stable enough
 - Due to the use of MD5_FILE, you will only gain performance with 'production' option ON, 
   which makes it unsuitable for MongoDb with in-memory storage as cache will have to be rebuilt after every service restart
