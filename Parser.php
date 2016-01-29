@@ -26,7 +26,7 @@ namespace Rain;
 
 class Parser {
 
-    // variables
+	// variables
 	private $config;
 	private $loopLevel = 0;
 
@@ -66,7 +66,7 @@ class Parser {
 	* @param string $filePath: full path to the template to be compiled
 	* @param string $md5_current: MD5 checksum of the template to be compiled
 	*/
-    public function compileFile($config, $filePath, $md5_current) {
+	public function compileFile($config, $filePath, $md5_current) {
 		
 		$this->config = $config;
 
