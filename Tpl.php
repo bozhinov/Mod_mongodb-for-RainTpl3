@@ -12,6 +12,7 @@
  *  maintained by Momchil Bozhinov (momchil@bojinov.info)
  *  ------------
  *  - Removed plugins
+ *  - Removed blacklist
  *  - Removed the option for extra tags
  *  - Removed SyntaxException
  *  - Removed autoload, replaced with a simple class include
@@ -41,7 +42,6 @@ class Tpl {
         'tpl_ext' => 'html',
         'php_enabled' => false,
         'auto_escape' => true,
-        'sandbox' => true, # required for the blacklist
         'remove_comments' => false
     );
 

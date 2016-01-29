@@ -17,6 +17,7 @@ Here is the full change log:
 
 - Simplified config (see examples for usage)
 - Removed plugins
+- Removed blacklist
 - Removed option for extra tags
 - Removed autoload, replaced with simple class include
 - The parser code was somewhat reorganized

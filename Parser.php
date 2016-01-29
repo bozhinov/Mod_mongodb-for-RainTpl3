@@ -12,6 +12,7 @@
  *  maintained by Momchil Bozhinov (momchil@bojinov.info)
  *  ------------
  *  - Removed plugins
+ *  - Removed blacklist
  *  - Removed the option for extra tags
  *  - Removed SyntaxException
  *  - Removed autoload, replaced with a simple class include
@@ -26,7 +27,6 @@ namespace Rain;
 class Parser {
 
     // variables
-	private $filePath;
 	private $config;
 	private $loopLevel = 0;
 
@@ -59,20 +59,6 @@ class Parser {
         'constant' => array('({#.*?})', '/{#(.*?)#{0,1}}/'),
     );
 
-    // black list of functions and variables
-    protected static $black_list = array(
-        'exec', 'shell_exec', 'pcntl_exec', 'passthru', 'proc_open', 'system', 'pcntl_fork', 'php_uname',
-        'phpinfo', 'popen', 'file_get_contents', 'file_put_contents', 'rmdir',
-        'mkdir', 'unlink', 'highlight_contents', 'symlink',
-        'apache_child_terminate', 'apache_setenv', 'define_syslog_variables',
-        'escapeshellarg', 'escapeshellcmd', 'eval', 'fp', 'fput', 'highlight_file', 'ini_alter',
-        'ini_get_all', 'ini_restore', 'inject_code',
-        'openlog', 'passthru', 'php_uname', 'phpAds_remoteInfo',
-        'phpAds_XmlRpc', 'phpAds_xmlrpcDecode', 'phpAds_xmlrpcEncode','proc_close',
-        'proc_get_status', 'proc_nice', 'proc_open', 'proc_terminate',
-        'syslog', 'xmlrpc_entity_decode'
-    );
-
     /**
     * Compile the file and save it in the cache
 	*
@@ -84,7 +70,6 @@ class Parser {
     public function compileFile($config, $filePath, $md5_current) {
 		
 		$this->config = $config;
-		$this->filePath = $filePath;
 
 		// read the file
 		$parsedCode = file_get_contents($filePath);
@@ -101,7 +86,7 @@ class Parser {
 				return "<?php echo '<?xml " . stripslashes($match[1]) . " ?>'; ?>";
 			}, $parsedCode);
 					
-		$parsedCode = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $this->compileTemplate($parsedCode);
+		$parsedCode = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $this->compileTemplate($parsedCode, $filePath);
 
 		// fix the php-eating-newline-after-closing-tag-problem
 		$parsedCode = str_replace("?>\n", "?>\n\n", $parsedCode);
@@ -116,8 +101,9 @@ class Parser {
      * @access protected
      *
      * @param string $code: code to compile
+	 * @param string $filePath: full path to the template to be compiled
      */
-    protected function compileTemplate($code) {
+    protected function compileTemplate($code, $filePath) {
 
         // set tags
         foreach (static::$tags as $tag => $tagArray) {
@@ -196,9 +182,7 @@ class Parser {
 							$newvar = $var;
 							$assignNewVar = null;
 						}
-
-						$this->blackList($var); // check black list
-
+						
 						//loop variables
 						$counter = "\$counter{$this->loopLevel}";       // count iteration
 
@@ -233,14 +217,12 @@ class Parser {
 					//if
 					case (preg_match($tagMatch['if'], $html, $matches)):
 						$openIf++; //increase open if counter (for intendation)
-						$this->blackList($matches[1]); // check black list
 						//variable substitution into condition (no delimiter into the condition)
 						$parsedCondition = $this->varReplace($matches[1], FALSE);
 						$parsedCode .= "<?php if( $parsedCondition ){ ?>"; //if code
 						break;
 					//elseif
 					case (preg_match($tagMatch['elseif'], $html, $matches)):
-						$this->blackList($matches[1]); // check black list
 						//variable substitution into condition (no delimiter into the condition)
 						$parsedCondition = $this->varReplace($matches[1], FALSE);
 						$parsedCode .= "<?php }elseif( $parsedCondition ){ ?>"; //elseif code
@@ -267,7 +249,6 @@ class Parser {
 					// function
 					case (preg_match($tagMatch['function'], $html, $matches)):
 						$parsedFunction = $matches[1] . ((isset($matches[2])) ? $this->varReplace($matches[2], FALSE) : "()");
-						$this->blackList($parsedFunction); // check black list
 						$parsedCode .= "<?php echo $parsedFunction; ?>"; // function
 						break;
 					//ternary
@@ -292,13 +273,13 @@ class Parser {
             }
 
 		if ($openIf > 0) {
-			$e = new Exception("Error! You need to close an {if} tag in ".$this->filePath." template");
-			throw $e->templateFile($this->filePath);
+			$e = new Exception("Error! You need to close an {if} tag in ".$filePath." template");
+			throw $e->templateFile($filePath);
 		}
 
 		if ($this->loopLevel > 0) {
-			$e = new Exception("Error! You need to close the {loop} tag in ".$this->filePath." template");
-			throw $e->templateFile($this->filePath);
+			$e = new Exception("Error! You need to close the {loop} tag in ".$filePath." template");
+			throw $e->templateFile($filePath);
 		}
 
         return $parsedCode;
@@ -338,8 +319,6 @@ class Parser {
 		
 		while (strpos($html,'|') !== false && substr($html, strpos($html,'|')+1,1) != "|") {
 			
-			$this->blackList($html);
-			
 			preg_match('/([\$a-z_A-Z0-9\(\),\[\]"->]+)\|([\$a-z_A-Z0-9\(\):,\[\]"->]+)/i', $html, $result);
 
 			@list($function, $params) = explode(":", $result[2]);
@@ -349,26 +328,6 @@ class Parser {
 		}
 		
         return $html;
-    }
-
-    protected function blackList($html) {
-		// The return of this function isn't really checked anywhere
-		// I doubt anyone actually handles those exceptions, so by default it is better if the script dies
-		
-        if (!$this->config['sandbox'])
-            return;
-
-        if (empty($this->config['black_list_preg']))
-            $this->config['black_list_preg'] = '#[\W\s]*' . implode('[\W\s]*|[\W\s]*', static::$black_list) . '[\W\s]*#';
-
-        // check if the function is in the black list (or not in white list)
-        if (preg_match($this->config['black_list_preg'], $html, $match)) {
-
-            // stop the execution of the script
-			$e = new Exception('Syntax ' . $match[0] . ' not allowed in template: ' . $this->filePath);
-			throw $e->templateFile($this->filePath)
-				->tag($match[0]);
-        }
     }
 
     public static function reducePath($path){
