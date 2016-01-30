@@ -64,9 +64,9 @@ class Parser {
 	*
 	* @param string $config: global config
 	* @param string $filePath: full path to the template to be compiled
-	* @param string $md5_current: MD5 checksum of the template to be compiled
+	*
 	*/
-	public function compileFile($config, $filePath, $md5_current) {
+	public function compileFile($config, $filePath) {
 		
 		$this->config = $config;
 
@@ -107,7 +107,7 @@ class Parser {
 		unset($code); // we don't need it any longer
 
 		//variables initialization
-		$parsedCode = $commentIsOpen = $ignoreIsOpen = NULL;
+		$parsedCode = $commentIsOpen = $ignoreIsOpen = $auto_escape_old = NULL;
 		$openIf = 0;
 
 		// if the template is not empty
@@ -230,13 +230,12 @@ class Parser {
 						break;
 					// autoescape off
 					case (preg_match($tagMatch['autoescape'], $html, $matches)):
-						$this->config['auto_escape_old'] = $this->config['auto_escape'];
-						$this->config['auto_escape'] = ($matches[1] == 'off' or $matches[1] == 'false' or $matches[1] == '0' or $matches[1] == NULL) ? FALSE : TRUE;
+						$auto_escape_old = $this->config['auto_escape'];
+						$this->config['auto_escape'] = (in_array($matches[1], array('off','false','0',NULL))) ? FALSE : TRUE;
 						break;
 					// autoescape on
 					case (preg_match($tagMatch['autoescape_close'], $html, $matches)):
-						$this->config['auto_escape'] = $this->config['auto_escape_old'];
-						unset($this->config['auto_escape_old']);
+						$this->config['auto_escape'] = $auto_escape_old;
 						break;
 					// function
 					case (preg_match($tagMatch['function'], $html, $matches)):
@@ -276,8 +275,6 @@ class Parser {
 
 		// fix the php-eating-newline-after-closing-tag-problem
 		$parsedCode = str_replace("?>\n", "?>\n\n", $parsedCode);
-		// store in Db
-		(new Db)->storeTemplate($parsedCode, $filePath, $md5_current);
 		
 		return $parsedCode;
     }

@@ -111,11 +111,13 @@ class Tpl {
      * @throw \Rain\NotFoundException the file doesn't exists
      */
     protected function checkTemplate($filePath) {
-				
+		
+		$db = new Db;
+		
 		$filePath = $this->config['tpl_dir'] . $filePath . '.' . $this->config['tpl_ext'];
 					
 		// get template from Db
-		list($html,$md5_stored) = (new Db)->getTemplate($filePath);
+		list($html,$md5_stored) = $db->getTemplate($filePath);
 
 		// in case of production option is true, the actual templates are not required
 		// it is one step from here to removing templates after compilation
@@ -129,7 +131,10 @@ class Tpl {
 			// Compile the template if the original has been updated
 			$md5_current = md5_file($filePath);
 			if ($this->config['debug'] || $md5_stored != $md5_current){
-				$html = (new Parser)->compileFile($this->config, $filePath, $md5_current);
+				// compile the template
+				$html = (new Parser)->compileFile($this->config, $filePath);
+				// store the update in Db
+				$db->storeTemplate($html, $filePath, $md5_current);
 			}
 		}
 
