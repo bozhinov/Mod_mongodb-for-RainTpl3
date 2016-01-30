@@ -30,10 +30,10 @@ require_once("MongoDb.php");
 
 class Tpl {
 
-    // variables
+	// variables
 	public $vars = array();
 
-    // configuration
+	// configuration
 	protected $config = array(
 		'charset' => 'UTF-8',
 		'debug' => false, # will compile the template every single run
@@ -104,13 +104,13 @@ class Tpl {
 	}
 	
 	 /**
-     * Check if the template exist and compile it if necessary
-     *
-     * @param string $filePath: the path to the template file
-     *
-     * @throw \Rain\NotFoundException the file doesn't exists
-     */
-    protected function checkTemplate($filePath) {
+	 * Check if the template exist and compile it if necessary
+	 *
+	 * @param string $filePath: the path to the template file
+	 *
+	 * @throw \Rain\NotFoundException the file doesn't exists
+	 */
+	protected function checkTemplate($filePath) {
 		
 		$db = new Db;
 		
@@ -142,14 +142,14 @@ class Tpl {
 		
 	}
 
-    /**
-     * Assign variable
-     * eg.     $t->assign('name','mickey');
-     *
-     * @param mixed $variable Name of template variable or associative array name/value
-     * @param mixed $value value assigned to this variable. Not set if variable_name is an associative array
-     *
-     */
+	/**
+	 * Assign variable
+	 * eg.     $t->assign('name','mickey');
+	 *
+	 * @param mixed $variable Name of template variable or associative array name/value
+	 * @param mixed $value value assigned to this variable. Not set if variable_name is an associative array
+	 *
+	 */
 	public function assign($variable, $value = null) {
 		if (is_array($variable)){
 			$this->vars = $variable + $this->vars;
