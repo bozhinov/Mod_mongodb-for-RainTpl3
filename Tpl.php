@@ -95,16 +95,17 @@ class Tpl {
 
 		ob_start();
 
-		$template = $this->checkTemplate($filePath);
+		// Not security wise either way
+		#include 'data:text/plain,' . $template; # requires allow_url_fopen to be allowed
+		eval('?>' . $this->checkTemplate($filePath));
+		#echo $this->checkTemplate($filePath);
+
+		$output = ob_get_clean();
+
 		if ($return_string){
-			$void = ob_get_clean();
-			return $template;
+			return $output;
 		} else {
-			// Not security wise either way
-			#include 'data:text/plain,' . $template; # requires allow_url_fopen to be allowed
-			eval('?>' . $template);
-			#echo $template;
-			echo ob_get_clean();
+			echo $output;
 		}
 		
 	}
