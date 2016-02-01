@@ -85,8 +85,6 @@ class Parser {
 				return "<?php echo '<?xml " . stripslashes($match[1]) . " ?>'; ?>";
 			}, $code);
 					
-		$code = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $code;
-
 		// set tags
 		$tagSplit = array();
 		$tagMatch = array();
@@ -272,6 +270,8 @@ class Parser {
 			$e = new Exception("Error! You need to close the {loop} tag in ".$filePath." template");
 			throw $e->templateFile($filePath);
 		}
+		
+		$parsedCode = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $parsedCode;
 
 		// fix the php-eating-newline-after-closing-tag-problem
 		$parsedCode = str_replace("?>\n", "?>\n\n", $parsedCode);
