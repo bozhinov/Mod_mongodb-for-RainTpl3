@@ -86,21 +86,27 @@ class Tpl {
 	 * Draw the template
 	 *
 	 * @param string $filePath: name of the template file or echo the output
+	 * @param string $return_string: return the code instead of eval
 	 *
 	 */
-	public function draw($filePath) {
+	public function draw($filePath, $return_string = FALSE) {
 				
 		extract($this->vars);
-		
+
 		ob_start();
 
-		// Not security wise either way
-		#include 'data:text/plain,' . $html; # requires allow_url_fopen to be allowed
-		eval('?>' . $this->checkTemplate($filePath));
-		#echo $this->checkTemplate($filePath);
+		$template = $this->checkTemplate($filePath);
+		if ($return_string){
+			$void = ob_get_clean();
+			return $template;
+		} else {
+			// Not security wise either way
+			#include 'data:text/plain,' . $template; # requires allow_url_fopen to be allowed
+			eval('?>' . $template);
+			#echo $template;
+			echo ob_get_clean();
+		}
 		
-		echo ob_get_clean();
-
 	}
 	
 	 /**
