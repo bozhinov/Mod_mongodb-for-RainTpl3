@@ -247,7 +247,7 @@ class Parser {
 					//variables
 					case (preg_match($tagMatch['variable'], $html, $matches)):
 						//variables substitution (es. {$title})
-						$parsedCode .= "<?php echo " . $this->varReplace($matches[1]) . "; ?>";
+						$parsedCode .= "<?php " . $this->varReplace($matches[1], TRUE, TRUE) . "; ?>";
 						break;
 					//constants
 					case (preg_match($tagMatch['constant'], $html, $matches)):
@@ -279,7 +279,7 @@ class Parser {
 		return $parsedCode;
     }
 
-    protected function varReplace($html, $escape = TRUE) {
+	protected function varReplace($html, $escape = TRUE, $echo = FALSE) {
 
 		// change variable name if loop level
 		$html = preg_replace(array('/(\$key)\b/', '/(\$value)\b/', '/(\$counter)\b/'), array('${1}' . $this->loopLevel, '${1}' . $this->loopLevel, '${1}' . $this->loopLevel), $html);
@@ -301,13 +301,18 @@ class Parser {
 			if (!preg_match('/\$.*=.*/', $html)) {
 
 				// escape character
-				if ($this->config['auto_escape'] && $escape)
+				if ($this->config['auto_escape'] && $escape){
 					$html = "htmlspecialchars( $html, ENT_COMPAT, '" . $this->config['charset'] . "', FALSE )";
+				}
+				
+				if ($echo){
+					$html = "echo ".$html;
+				}
 			}
 		}
 
 		return $html;
-    }
+	}
 
     protected function modifierReplace($html) {
 		
