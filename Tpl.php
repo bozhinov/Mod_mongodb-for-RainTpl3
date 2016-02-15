@@ -97,8 +97,13 @@ class Tpl {
 
 		// Not security wise either way
 		#include 'data:text/plain,' . $template; # requires allow_url_fopen to be allowed
-		eval('?>' . $this->checkTemplate($filePath));
+		$result = @eval('?>' . $this->checkTemplate($filePath). "<?php return true;");
 		#echo $this->checkTemplate($filePath);
+		
+		if ($result == FALSE){ # not valid for PHP7
+			$e = new Exception("Error! Failed to eval() ".$filePath." template");
+			throw $e->templateFile($filePath);
+		}
 
 		$output = ob_get_clean();
 
