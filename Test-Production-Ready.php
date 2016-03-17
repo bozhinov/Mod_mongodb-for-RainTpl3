@@ -9,7 +9,9 @@ function fixPath(&$path){
 	$path = str_replace("/", "\\", $path);
 }
 
-$fs = (new Tpl)->countTemplates();
+$tpl = new Tpl;
+$tpl->configure(array("tpl_dir" => "../templates/"));
+$fs = $tpl->countTemplates();
 $grid = (new Db)->countTemplates();
 
 echo "Count templates filesystem: ".$fs['count']."<br />";
