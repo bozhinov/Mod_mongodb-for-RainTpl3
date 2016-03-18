@@ -30,10 +30,10 @@ require_once("MongoDb.php");
 
 class Tpl {
 
-    // variables
+	// variables
 	public $vars = array();
 
-    // configuration
+	// configuration
 	protected $config = array(
 		'charset' => 'UTF-8',
 		'debug' => false, # will compile the template every single run
@@ -86,31 +86,43 @@ class Tpl {
 	 * Draw the template
 	 *
 	 * @param string $filePath: name of the template file or echo the output
+	 * @param string $return_string: return the code instead of eval
 	 *
 	 */
-	public function draw($filePath) {
+	public function draw($filePath, $return_string = FALSE) {
 				
 		extract($this->vars);
-		
+
 		ob_start();
 
 		// Not security wise either way
-		#include 'data:text/plain,' . $html; # requires allow_url_fopen to be allowed
-		eval('?>' . $this->checkTemplate($filePath));
+		#include 'data:text/plain,' . $template; # requires allow_url_fopen to be allowed
+		$result = @eval('?>' . $this->checkTemplate($filePath). "<?php return true;");
 		#echo $this->checkTemplate($filePath);
 		
-		echo ob_get_clean();
+		if ($result == FALSE){ # not valid for PHP7
+			$e = new Exception("Error! Failed to eval() ".$filePath." template");
+			throw $e->templateFile($filePath);
+		}
 
+		$output = ob_get_clean();
+
+		if ($return_string){
+			return $output;
+		} else {
+			echo $output;
+		}
+		
 	}
 	
 	 /**
-     * Check if the template exist and compile it if necessary
-     *
-     * @param string $filePath: the path to the template file
-     *
-     * @throw \Rain\NotFoundException the file doesn't exists
-     */
-    protected function checkTemplate($filePath) {
+	 * Check if the template exist and compile it if necessary
+	 *
+	 * @param string $filePath: the path to the template file
+	 *
+	 * @throw \Rain\NotFoundException the file doesn't exists
+	 */
+	protected function checkTemplate($filePath) {
 		
 		$db = new Db;
 		
@@ -142,14 +154,14 @@ class Tpl {
 		
 	}
 
-    /**
-     * Assign variable
-     * eg.     $t->assign('name','mickey');
-     *
-     * @param mixed $variable Name of template variable or associative array name/value
-     * @param mixed $value value assigned to this variable. Not set if variable_name is an associative array
-     *
-     */
+	/**
+	 * Assign variable
+	 * eg.     $t->assign('name','mickey');
+	 *
+	 * @param mixed $variable Name of template variable or associative array name/value
+	 * @param mixed $value value assigned to this variable. Not set if variable_name is an associative array
+	 *
+	 */
 	public function assign($variable, $value = null) {
 		if (is_array($variable)){
 			$this->vars = $variable + $this->vars;
