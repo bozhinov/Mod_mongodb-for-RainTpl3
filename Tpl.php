@@ -134,7 +134,7 @@ class Tpl {
 		// in case of production option is true, the actual templates are not required
 		// it is one step from here to removing templates after compilation
 		if (!$this->config['production']){
-			// For check templates are exists
+			// Check if template exists
 			if (!file_exists($filePath)) {
 				$e = new NotFoundException('Template ' . $filePath . ' not found!');
 				throw $e->templateFile($filePath);
