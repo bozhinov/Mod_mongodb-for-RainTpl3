@@ -31,10 +31,10 @@ require_once("MongoDb.php");
 class Tpl {
 
 	// variables
-	public $vars = array();
+	public $vars = [];
 
 	// configuration
-	protected $config = array(
+	protected $config = [
 		'charset' => 'UTF-8',
 		'debug' => false, # will compile the template every single run
 		'production' => false, # will skip udpate check and load tpl directly from db
@@ -43,21 +43,22 @@ class Tpl {
 		'php_enabled' => false,
 		'auto_escape' => true,
 		'remove_comments' => false
-	);
+	];
 
-	public function configure($my_conf){
+	public function configure($my_conf)
+	{
 		(!is_array($my_conf)) AND die("Invalid config");
-		
+
 		foreach ($my_conf as $my=>$val){
 			if (isset($this->config[$my])){
 				$this->config[$my] = $val;
 			}
 		}
-		
+
 		// Do the check here. No need to check if default
 		(substr($this->config['tpl_dir'], -1) != '/') AND die("config option tpl_dir needs a trailing slash");
 	}
-		
+
 	/**
 	 * Count number of templates in the templates folder
 	 * Used only in the Test-Production-Ready script
@@ -66,19 +67,17 @@ class Tpl {
 	 *
 	 * @returns array
 	 */
-	public function countTemplates(){
-			
-		$tpls = array();
-		$tpls['count'] = 0;
-		$tpls['names'] = array();
-		
+	public function countTemplates()
+	{
+		$tpls = ['count' => 0, 'names' => []];
+
 		foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->config['tpl_dir'])) as $fileInfo) {
 			if($fileInfo->isFile()){
 				$tpls['count']++;
 				$tpls['names'][] = $fileInfo->getPath()."\\".$fileInfo->getFilename();
-			}			
+			}
 		}
-		
+
 		return $tpls;
 	}
 
@@ -89,15 +88,15 @@ class Tpl {
 	 * @param string $return_string: return the code instead of eval
 	 *
 	 */
-	public function draw($filePath, $return_string = FALSE) {
-				
+	public function draw($filePath, $return_string = FALSE) 
+	{
 		extract($this->vars);
 
 		ob_start();
 
 		// Not security wise either way
 		#include 'data:text/plain,' . $template; # requires allow_url_fopen to be allowed
-		$result = @eval('?>' . $this->checkTemplate($filePath). "<?php return true;");
+		$result = eval('?>' . $this->checkTemplate($filePath). "<?php return true;");
 		#echo $this->checkTemplate($filePath);
 		
 		if ($result == FALSE){ # not valid for PHP7
@@ -112,9 +111,8 @@ class Tpl {
 		} else {
 			echo $output;
 		}
-		
 	}
-	
+
 	 /**
 	 * Check if the template exist and compile it if necessary
 	 *
@@ -122,12 +120,12 @@ class Tpl {
 	 *
 	 * @throw \Rain\NotFoundException the file doesn't exists
 	 */
-	protected function checkTemplate($filePath) {
-		
+	protected function checkTemplate($filePath)
+	{
 		$db = new Db;
-		
+
 		$filePath = $this->config['tpl_dir'] . $filePath . '.' . $this->config['tpl_ext'];
-					
+
 		// get template from Db
 		list($html,$md5_stored) = $db->getTemplate($filePath);
 
@@ -139,7 +137,7 @@ class Tpl {
 				$e = new NotFoundException('Template ' . $filePath . ' not found!');
 				throw $e->templateFile($filePath);
 			}
-			
+
 			// Compile the template if the original has been updated
 			$md5_current = md5_file($filePath);
 			if ($this->config['debug'] || $md5_stored != $md5_current){
@@ -151,7 +149,6 @@ class Tpl {
 		}
 
 		return $html;
-		
 	}
 
 	/**
@@ -162,7 +159,8 @@ class Tpl {
 	 * @param mixed $value value assigned to this variable. Not set if variable_name is an associative array
 	 *
 	 */
-	public function assign($variable, $value = null) {
+	public function assign($variable, $value = null)
+	{
 		if (is_array($variable)){
 			$this->vars = $variable + $this->vars;
 		} else {
@@ -171,3 +169,5 @@ class Tpl {
 	}
 
 }
+
+?>

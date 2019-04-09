@@ -31,10 +31,12 @@ class Exception extends \Exception {
      *
      * @param string | null $templateFile
      * @return \Rain\Tpl_Exception | string
-     */  	
-    public function templateFile($templateFile){
-        if(is_null($templateFile))
+     */
+    public function templateFile($templateFile)
+	{
+        if(is_null($templateFile)){
             return $this->templateFile;
+		}
 
         $this->templateFile = (string) $templateFile;
         return $this;
@@ -45,7 +47,7 @@ class Exception extends \Exception {
  * Exception thrown when template file does not exists.
  */
 class NotFoundException extends Exception {
-    
+
 }
 
-// -- end
+?>
